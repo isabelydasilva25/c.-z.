@@ -1,0 +1,106 @@
+
+    db.run(`
+    CREATE TABLE IF NOT EXISTS movimento (
+     id INTEGER PRIMARY KEY AUTOINCREMENT,
+     codigo VARCHAR(10),
+     horarioE VARCHAR(100) NOT NULL,
+     horarioS INTEGER
+    )
+    `);
+    ////////////////////////////rotas para movimento////////////////////////////////
+
+      // Cadastrar movimento
+     app.post("/movimento", (req, res) =>{
+         const { codigo, horarioE, horarioS } =
+                 req.body;    
+
+         if (!codigo || !horarioE){
+             return res.status(400).send("codigo e horarioE são obrigatórios.");
+         }
+         const query = `INSERT INTO movimento (codigo, horarioE, horarioS) VALUES (?, ?, ?)`;
+         db.run(
+             query,
+             [codigo, horarioE, horarioS],
+             function (err){
+                 if (err) {
+                     return res.status(500).send("Erro ao cadastrar movimento.");
+                 }
+                 res.status(201).send({
+                     id: this.lastID,
+                     message: "movimento cadastrado com sucesso.",
+                 });
+             },
+        );
+    });
+
+     // Listar movimento
+     // Endpoint para listar todos os movimento ou buscar por codigo
+     app.get("/movimento", (req, res) =>{
+         const codigo = req.query.codigo || ""; // Recebe o codigo da query string (se houver)
+
+         if (codigo){
+             // Se codigo foi passado, busca movimento que possuam esse codigo ou parte dele    
+             const query = `SELECT * FROM movimento WHERE codigo LIKE ?`;
+             db.all(query, [`%${codigo}%`], (err, rows) =>{
+                 if (err){
+                     console.error(err);
+                     return res
+                         .status(500)
+                         .json({ message: "Erro ao buscar movimento." });
+                 }
+                 res.json(rows); // Retorna os movimento encontrados ou um array vazio
+         });
+     } else{
+         // Se codigo não foi passado, retorna todos os movimento
+         const query = `SELECT * FROM movimento WHERE codigo LIKE ?`;
+
+         db.all(query, [`%${codigo}%`], (err, rows) =>{
+             if (err){
+                 console.error(err);
+                 return res
+                     .status(500)
+                     .json({ message: "Erro ao buscar movimento." });
+             }
+             res.json(rows); // Retorna todos os movimento
+         });
+         
+     } else {
+         // Se codigo não foi passado, retorna todos os movimento
+         const query = `SELECT * FROM movimento WHERE codigo LIKE ?`;
+
+         db.all(query, [`%${codigo}%`], (err, rows) =>{
+             if (err){
+                 console.error(err);
+                 return res
+                     .status(500)
+                     .json({ message: "Erro ao buscar movimento." });
+             }
+             res.json(rows);
+         });
+     }
+});
+     // Atualizar movimento
+     app.put("/movimento/codigo/:codigo", (req, res) =>{
+         const { codigo } = req.params;
+         const { horarioE, horarioS } = req.body;
+         const query = `UPDATE movimento SET horarioE = ?, horarioS = ?, codigo= ?, WHERE codigo = ?`;
+         db.run(query, [horarioE, horarioS, codigo], function (err){
+             if (err){
+                 return res.status(500).send("Erro ao atualizar movimento.");
+             }
+             if (this.changes === 0){
+                 return res.status(404).send("movimento não encontrado.");
+             }
+             res.send("movimento atualizado com sucesso.");
+         });                                                                                    
+     });
+
+            // Teste para verificar se o servidor está rodando
+app.get("/", (req, res) => {
+    res.send("Servidor está rodando e tabelas criadas!");
+});
+
+// Iniciando o servidor
+app.listen(port, () => {
+    console.log(`Servidor rodando na porta ${port}`);
+});
