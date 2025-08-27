@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario</title>
+    <link rel="stylesheet
+    " href="pag.css">                                                         
+</head>
+<body>
+    <header>
+         <img class="logo" src="imagens/logoo.png">
+         <img class="logo2" src="imagens/ccmts.jfif">
+         <img class="logo3" src="imagens/parana.png">
+    </header>
+    <nav>  </nav>
+    <div id="main-container">
+        <h1>Relatórios de Pagamentos</h1>
+
+        <div class="filters"> 
+            <label for="codigo">Código do Cliente:</label>
+            <input type="text" id="codigo" placeholder="Digite o Código do cliente">
+
+            <label for="valor">Valor:</label>
+            <input type="text" id="valor" placeholder="Digite o valor do pagamento">
+
+            <label for="dataPagamento">Data de Pagamento:</label>
+            <input type="date" id="dataPagamento">
+
+            <label for="formapagamento">Forma de Pagamento:</label>
+            <input type="text" id="formapagamento" placeholder="Digite a forma de pagamento">
+
+            <button onclick="buscarRelatorio()" class="alinhaBtns">Buscar</button>
+        </div>
+
+
+   </form>
+    <div class="container_botoes">
+            <button class="botao1" onclick="incluirPagamento(event)">Incluir</button>
+            <button class="botao2" onclick="excluirPagamento()">Excluir</button>
+            <button class="botao3" onclick="alterarPagamento()">Alterar</button>
+            <button class="botao4" onclick="consultarPagamento()">Consultar</button>
+            <button class="botao5" onclick="limpaFormulario()">Limpar</button>
+         </div>
+      </section>
+      <h3>Relatório de Pagamentos</h3>
+          <table>
+              <thead>
+                  <tr>
+                      <th>codigo</th>
+                      <th>Cliente</th>
+                      <th>Produto</th>
+                      <th>Quantidade</th>
+                      <th>Data</th>
+                  </tr>
+              </thead>
+              <tbody id="tabela-pagamento">
+              </tbody>
+          </table>
+      </div>
+    </main>
+
+    <footer>
+         <img class="logo4" src="imagens/gimc2.png">
+         <P>&COPY; 2025-Todos os direitos reservados.</P>
+    </footer>
+
+    
+</body>
+</html
+
+
+
+
+
+async function incluirPagamento(event) {
+    event.preventDefault();
+    const pagamento = {
+        codigo: document.getElementById("codigo").value,
+        valor: document.getElementById("valor").value,
+        dataPagamento: document.getElementById("dataPagamento").value,
+        formaPagamento: document.getElementById("formapagamento").value,
+    };
+
+    try {
+        const response = await fetch('/pagamento', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(pagamento)
+        });
+
+        const result = await response.json();
+        if (response.ok) {
+            alert("pagamento registrado com sucesso!");
+            document.getElementById("formPagamento").reset();
+        } else {
+            alert(`Erro: ${result.message}`);
+        }
+    } catch (err) {
+        console.error("Erro na solicitação:", err);
+        alert("Erro ao registrar pagamento.");
+    }
+}
+
+
+// Função para listar todos os clientes ou buscar clientes por CPF
+async function consultarPagamento() {
+    const codigo = document.getElementById('codigo').value.trim();  // Pega o valor do CPF digitado no input
+
+    let url = '/pagamento';  // URL padrão para todos os clientes
+
+    if (codigo) {
+        // Se CPF foi digitado, adiciona o parâmetro de consulta
+        url += `?codigo=${codigo}`;
+    }
+
+    try {
+        const response = await fetch(url);
+        const pagamento = await response.json();
+
+        const tabela = document.getElementById('tabela-pagamento');
+        tabela.innerHTML = ''; // Limpa a tabela antes de preencher
+
+        if (pagamento.length === 0) {
+            // Caso não encontre clientes, exibe uma mensagem
+            tabela.innerHTML = '<tr><td colspan="6">Nenhum pagamento encontrado.</td></tr>';
+        } else {
+            clientes.forEach(pagamento => {
+                const linha = document.createElement('tr');
+                linha.innerHTML = `
+                    <td>${pagamento.codigo}</td>
+                    <td>${pagamento.valor}</td>
+                    <td>${pagamento.dataPagamento}</td>
+                    <td>${pagamento.formaPagamento}</td>
+                `;
+                tabela.appendChild(linha);
+            });
+        }
+    } catch (error) {
+        console.error('Erro ao listar pagamento:', error);
+    }
+}
+// Função para atualizar as informações do cliente
+async function alterarPagamento() {
+    const codigo = document.getElementById('codigo').value;
+    const valor = document.getElementById('valor').value;
+    const dataPagamento = document.getElementById('dataPagamento').value;
+    const formaPagamento = document.getElementById('formaPagamento').value;
+
+    const pagamentoAtualizado = {
+        codigo,
+        valor,
+        dataPagamento, 
+        formaPagamento
+    };
+
+    try {
+        const response = await fetch(`/pagamento/codigo/${codigo}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(pagamentoAtualizado)
+        });
+
+        if (response.ok) {
+            alert('Pagamento registrado com sucesso!');
+        } else {
+            const errorMessage = await response.text();
+            alert('Erro ao registrar pagamento: ' + errorMessage);
+        }
+    } catch (error) {
+        console.error('Erro ao atualizar pagamento:', error);
+        alert('Erro ao atualizar pagamento.');
+    }
+}
+async function limpaFormulario() {
+    document.getElementById('codigo').value ='';
+    document.getElementById('valor').value = '';
+    document.getElementById('dataPagameno').value = '';
+    document.getElementById('formaPagamento').value = '';
+}
+
+
