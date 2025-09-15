@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario</title>
+    <link rel="stylesheet" href="pag.css">
+    <script src="pag.js" defer></script> <!-- Adicione defer -->
+</head>
+<body>
+    <header>
+         <img class="logo" src="imagens/logoo.png">
+         <img class="logo2" src="imagens/ccmts.jfif">
+         <img class="logo3" src="imagens/parana.png">
+    </header>
+    <nav></nav>
+    <main>
+        <div id="main-container">
+            <h1>Relatórios de Pagamentos</h1>
+            <form class="pagamentos" id="formPagamento">
+                <div class="full-box">
+                    <label for="codigo">Código</label>
+                    <input type="text" id="codigo" maxlength="11" placeholder="Digite o Código do cliente" />
+                </div>
+                <div class="half-box">
+                    <label for="valor">Valor:</label>
+                    <input type="number" id="valor" name="valor" placeholder="Digite o valor do pagamento" required>
+                </div>
+                <div class="half-box">
+                    <label for="dataPagamento">Data de Pagamento:</label>
+                    <input type="date" id="dataPagamento" name="dataPagamento" placeholder="Digite a data" required>
+                </div>
+                <div class="full-row">
+                    <div class="form-group">
+                    <label for="formaPagamento">Forma de Pagamento</label> <!-- Corrigido o for -->
+                       <select id="formaPagamento" name="formaPagamento"> <!-- Corrigido o id e adicionado name -->
+                        <option value="Dinheiro">Dinheiro</option>
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão">Cartão</option>
+                    </select>
+                </div>        
+            </form>
+
+            <div class="container_botoes">
+                <button class="botao1" onclick="incluirPagamento(event)">Incluir</button>
+                <button class="botao2" onclick="voltarpagina()">Voltar</button>
+                <button class="botao3" onclick="alterarPagamento()">Alterar</button>
+                <button class="botao4" onclick="consultarPagamento()">Consultar</button>
+                <button class="botao5" onclick="limpaFormulario()">Limpar</button>
+            </div>
+
+            <table border="1">
+                <thead>
+                    <tr>
+                        <th>Codigo</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                        <th>Forma de pagamento</th>
+                    </tr>
+                </thead>
+                <tbody id="tabela-pagamento">
+                    <!-- Linhas serão preenchidas pelo JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <footer>
+         <img class="logo4" src="imagens/gimc2.png">
+         <P>&COPY; 2025-Todos os direitos reservados.</P>
+    </footer>
+</body>
+</html>
+
+js
+
+// Array para armazenar os pagamentos (substitua por sua API real)
+let pagamentos = [];
+
+async function incluirPagamento(event) {
+    event.preventDefault();
+
+    const novoPagamento = {
+        codigo: document.getElementById("codigo").value,
+        valor: document.getElementById("valor").value,
+        dataPagamento: document.getElementById("dataPagamento").value,
+        formaPagamento: document.getElementById("formaPagamento").value
+    };
+
+    // Verifica se todos os campos estão preenchidos
+    if (!novoPagamento.codigo || !novoPagamento.valor || !novoPagamento.dataPagamento || !novoPagamento.formaPagamento) {
+        alert("Por favor, preencha todos os campos!");
+        return;
+    }
+
+    try {
+        // Se você tiver uma API real, use este código:
+        /*
+        const response = await fetch('/pagamentos', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(novoPagamento)
+        });
+
+        if (response.ok) {
+            alert("Pagamento registrado com sucesso!");
+            document.getElementById("formPagamento").reset();
+            consultarPagamento(); // Atualiza a tabela
+        } else {
+            alert("Erro ao registrar pagamento.");
+        }
+        */
+
+        // Solução temporária (armazenamento local)
+        pagamentos.push(novoPagamento);
+        alert("Pagamento registrado com sucesso!");
+        document.getElementById("formPagamento").reset();
+        consultarPagamento(); // Atualiza a tabela
+
+    } catch (err) {
+        console.error("Erro na solicitação:", err);
+        alert("Erro ao registrar pagamento.");
+    }
+}
+
+// Função para listar pagamentos
+async function consultarPagamento() {
+    const codigo = document.getElementById('codigo').value.trim();
+
+    // Se tiver uma API real, use:
+    /*
+    let url = '/pagamentos';
+    if (codigo) {
+        url += `?codigo=${codigo}`;
+    }
+
+    try {
+        const response = await fetch(url);
+        const pagamentos = await response.json();
+        preencherTabela(pagamentos);
+    } catch (error) {
+        console.error('Erro ao listar pagamentos:', error);
+    }
+    */
+
+    // Solução temporária (filtra do array local)
+    let resultados = codigo ? 
+        pagamentos.filter(p => p.codigo === codigo) : 
+        pagamentos;
+
+    preencherTabela(resultados);
+}
+
+function preencherTabela(dados) {
+    const tabela = document.getElementById('tabela-pagamento');
+    tabela.innerHTML = '';
+
+    if (dados.length === 0) {
+        tabela.innerHTML = '<tr><td colspan="4">Nenhum pagamento encontrado.</td></tr>';
+    } else {
+        dados.forEach(pagamento => {
+            const linha = document.createElement('tr');
+            linha.innerHTML = `
+                <td>${pagamento.codigo}</td>
+                <td>R$ ${pagamento.valor}</td>
+                <td>${new Date(pagamento.dataPagamento).toLocaleDateString('pt-BR')}</td>
+                <td>${pagamento.formaPagamento}</td>
+            `;
+            tabela.appendChild(linha);
+        });
+    }
+}
+
+// Adicione esta função se não existir
+function voltarpagina() {
+    window.history.back();
+}
+
+// Continue com as outras funções (alterarPagamento, limpaFormulario)...
